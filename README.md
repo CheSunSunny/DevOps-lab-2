@@ -11,7 +11,7 @@ RUN apt-get install -y python3.11 python3-pip
 WORKDIR /app
 
 COPY predict.py .
-COPY model.pkl .
+COPY /model .
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
@@ -32,7 +32,7 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY model.pkl .
+COPY /model .
 COPY predict.py .
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser && \
