@@ -10,7 +10,8 @@ RUN apt-get install -y python3.11 python3-pip
 
 WORKDIR /app
 
-COPY predict.py .  # приложение
+COPY predict.py .
+COPY /local_model ./local_model
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
@@ -31,7 +32,7 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY /model .
+COPY /local_model ./local_model
 COPY predict.py .
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser && \
@@ -51,7 +52,14 @@ ENTRYPOINT ["python3", "predict.py"]
 4. Изменился порядок копирования файлов - от наиболее стабильным к наиболее часто изменяемым. Это важно для эффективного использования системы кеширования Docker. Docker кеширует результат каждой команды как отдельный слой, то есть при изменении только одного файла (например, predict.py) пересобираются только слои, зависящие от этого файла. Раздельное копирование более-менее стабильных файлов (зависимости, модель) и часто меняющегося кода позволяет максимально использовать кеш. Из-за этого же установка зависимостей происходит в первую очередь, иначе тяжеловесные библиотеки (такие как pytorch в нашем случае) будут устанавливаться как новый слой при каждом изменении программы. Также команды RUN объединены в одну там, где это возможно, чтобы не создавать дополнительные слои образа.
 
 ## Сборка образа и запуск контейнера:
+<img width="1876" height="461" alt="image" src="https://github.com/user-attachments/assets/ebddffb3-1cad-490d-b572-ed4f5f9e88b0" />
+<img width="1473" height="181" alt="image" src="https://github.com/user-attachments/assets/4e215b77-14c3-43cf-81e7-a40a4b304d3b" />
+
+
+Немного изменим программу.
+При повторном запуске build видно, что время сборки сильно меньше, так как слой с установленными зависимостями подтягивается из кеша.
 <img width="1882" height="688" alt="image" src="https://github.com/user-attachments/assets/4aa83d36-9306-45f2-8d08-724f0115b19f" />
+
 
 
 ### Плохие практики работы с контейнерами:
